@@ -9,7 +9,7 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 # =================================================================
 # 1. VERİ YÜKLEME VE İLK BAKIŞ
 # =================================================================
-df = pd.read_csv('../data/train.csv')
+df = pd.read_csv('../data/train.csv') #readme dosyasında yer alan linkteki train dosyasını pcye indirip "data" isimli dosyaya attığınızda kod çalışır.
 print('🏠 HOUSE PRICE PREDICTING UYGULAMASI')
 print(f"Veri setinde toplam {df.shape[0]} satır ve {df.shape[1]} sütun bulunmaktadır.\n")
 
