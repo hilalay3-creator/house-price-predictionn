@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-
 # =================================================================
 # 1. VERİ YÜKLEME VE İLK BAKIŞ
 # =================================================================
@@ -15,16 +14,16 @@ print('🏠 HOUSE PRICE PREDICTING UYGULAMASI')
 print(f"Veri setinde toplam {df.shape[0]} satır ve {df.shape[1]} sütun bulunmaktadır.\n")
 
 # =================================================================
-# 2. KATEGORİK EKSİKLERİ "NONE" İLE MÜHÜRLEME
+# 2. KATEGORİK EKSİKLERİ (NA)"NONE" İLE DEĞİŞTİRME
 # =================================================================
 kelime_sutunlari = df.select_dtypes(include=['object','str']).columns.tolist()
 for sutun in kelime_sutunlari:
     df[sutun] = df[sutun].fillna("None")
 
-print("✅ Kategorik sütunlar 'None' ile mühürlendi.")
+print("✅ Kategorik sütunlardaki boşluklar 'None' ile değiştirildi.")
 
 # =================================================================
-# 3. SAYISAL EKSİK ANALİZİ VE MANTIK KONTROLLERİ (HOCAYA İSPAT)
+# 3. SAYISAL EKSİK ANALİZİ VE MANTIK KONTROLLERİ (ispat)
 # =================================================================
 sayisal_df = df.select_dtypes(include=['number'])
 sayisal_eksikler = sayisal_df.isnull().sum()
@@ -35,13 +34,13 @@ print("="*50)
 print("[!] İçinde Boşluk Olan Sayısal Sütunlar:")
 print(sayisal_eksikler[sayisal_eksikler > 0])
 
-# Proof: Neden GarageYrBlt'yi 0 ile dolduruyoruz?
+# Kanıtlayalım: Neden GarageYrBlt'yi 0 ile dolduruyoruz?
 garajı_olmayanlar = df[df["GarageType"] == "None"]
 yıl_boş_mu = garajı_olmayanlar["GarageYrBlt"].isnull().sum()
 toplam_yok = len(garajı_olmayanlar)
 
 print("\n" + "="*50)
-print("      GARAJ MANTIK KONTROLÜ (PROOF)")
+print("      GARAJ MANTIK KONTROLÜ (kanıt)")
 print("="*50)
 print(f"--> GarageType 'None' olan toplam ev sayısı: {toplam_yok}")
 print(f"--> Bu evlerden garaj yılı BOŞ (NaN) olanların sayısı: {yıl_boş_mu}")
@@ -50,17 +49,16 @@ if toplam_yok == yıl_boş_mu:
     print("\n✅ KANITLANDI: Garaj tipi 'None' olan her evin yılı da boş.")
     print("Yani bu evlerde fiziksel olarak bir garaj ünitesi mevcut değil.")
 
-# İstatistiksel Özetler (Karar Destek)
+# İstatistiksel Özetler (Boşluklar mod-median-zero hangisi ile doldurulacak?)
 print("\n--- LotFrontage & MasVnrArea Özeti ---")
 print(df[["LotFrontage", "MasVnrArea"]].describe().T)
-
+#minimum ve maksimum değerler arasında çok büyük farklar var, bu da medyanın daha sağlıklı bir doldurma yöntemi olduğunu gösteriyor. GarageYrBlt için ise mantık kontrolü sonucunda 0 ile doldurmanın uygun olduğu kanıtlandı.
 # Sayısal Boşlukları Doldurma
 df["LotFrontage"] = df["LotFrontage"].fillna(df["LotFrontage"].median())
 df["MasVnrArea"] = df["MasVnrArea"].fillna(df["MasVnrArea"].median())
 df["GarageYrBlt"] = df["GarageYrBlt"].fillna(0)
 
 print(f"\n✅ Sayısal eksikler kapatıldı. Kalan toplam eksik: {df.isnull().sum().sum()}")
-
 # =================================================================
 # 4. AYKIRI DEĞER (OUTLIER) ANALİZİ VE TEMİZLİĞİ
 # =================================================================
@@ -70,10 +68,9 @@ plt.axvline(x=4000, color='r', linestyle='--', label='Kritik Sınır (4000 m2)')
 plt.title('Yaşam Alanı vs Satış Fiyatı (Aykırı Değer Analizi)')
 plt.legend()
 plt.show()
-
+#4000 m2'nin üzerindeki yaşam alanına sahip evler, satış fiyatından bağımsız olarak aşırı yüksek fiyatlara sahip görünüyor. Bu da bu noktadan sonra gelen verilerin modelin genelleme yeteneğini bozabileceği anlamına geliyor. Bu nedenle, bu sınırın üzerindeki verileri temizleyelim.
 df = df[df['GrLivArea'] < 4000].copy()
 print(f"✅ Aykırı değerler temizlendi. Yeni satır sayısı: {len(df)}")
-
 # =================================================================
 # 5. ENCODING VE İKİZ SÜTUN TEMİZLİĞİ
 # =================================================================
@@ -84,7 +81,7 @@ corr_matrix = df_encoded.corr().abs()
 upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 to_drop = [column for column in upper.columns if any(upper[column] > 0.90)]
 df_final = df_encoded.drop(columns=to_drop)
-
+#ikiz sütunların birbirleriyle çok yüksek korelasyona sahip olduğunu gördük. Bu tür sütunlar modelin öğrenme sürecinde gürültü yaratabilir ve genelleme yeteneğini düşürebilir. Bu nedenle, bu sütunları veri setinden çıkararak daha temiz ve etkili bir model oluşturmayı hedefliyoruz.
 print(f"🔗 İkiz olduğu için elenen gürültülü sütun sayısı: {len(to_drop)}")
 
 # =================================================================
@@ -92,7 +89,7 @@ print(f"🔗 İkiz olduğu için elenen gürültülü sütun sayısı: {len(to_d
 # =================================================================
 X = df_final.drop(['SalePrice', 'Id'], axis=1)
 y = df_final['SalePrice']
-
+#ıd sütununu ezberleyeilirdi , bu yüzden modelin öğrenme sürecine gürültü katmamak için çıkardık. SalePrice ise hedef değişkenimiz olduğu için onu da X'den ayırarak y'ye atadık.
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
 
 scaler = StandardScaler()
@@ -124,7 +121,7 @@ y_final_pred = models[best_model_name].predict(X_test_scaled)
 mae = mean_absolute_error(y_test, y_final_pred)
 rmse = np.sqrt(mean_squared_error(y_test, y_final_pred))
 
-print("\n" + "🏆" * 20 + "\n       BİTİRME ÖDEVİ PERFORMANS RAPORU\n" + "🏆" * 20)
+print("\n" + "🏆" * 20 + "\n   PERFORMANS RAPORU\n" + "🏆" * 20)
 print(f"{'R2 Skoru (Doğruluk)':<25}: %{results[best_model_name]:.2f}")
 print(f"{'MAE (Ortalama Hata)':<25}: {mae:.2f} $")
 print(f"{'RMSE (Kritik Hata)':<25}: {rmse:.2f} $")
@@ -158,8 +155,6 @@ plt.show()
 print("\n" + "="*75 + "\n📌 HİLAL AY - PROJE DEĞERLENDİRME VE SONUÇ\n" + "="*75)
 print(f"Modelimiz ev fiyatlarında ortalama {mae:.0f} $ civarında bir sapma yapmaktadır.")
 print("🚀 PROJE BAŞARIYLA TAMAMLANDI!")
-# ... (Önceki kodun aynen devam ettiğini varsayıyoruz, en sonuna şunları ekliyoruz) ...
-
 # =================================================================
 # 11. HEDEF DEĞİŞKEN (SALEPRICE) KORELASYON ANALİZİ
 # =================================================================
@@ -211,7 +206,7 @@ print("\n✅ Yorum: Grafikte görüldüğü üzere, modelimiz fiyatı belirlerke
       f"'{en_etkili_10.iloc[0]['Özellik']}' özelliğine güvenmektedir.")
 print("🚀 PROJE TÜM ANALİZLERİYLE BAŞARIYLA TAMAMLANDI!")
 # =================================================================
-# 3.5 HEDEF DEĞİŞKEN ANALİZİ (GÖRSELLEŞTİRME ŞARTI)
+# 3.5 HEDEF DEĞİŞKEN ANALİZİ 
 # =================================================================
 plt.figure(figsize=(12, 5))
 
@@ -220,7 +215,7 @@ plt.subplot(1, 2, 1)
 sns.histplot(df['SalePrice'], kde=True, color='blue')
 plt.title('Orijinal Satış Fiyatı Dağılımı')
 
-# 2. Log Dönüşümü (Hocanın listesinde var!)
+# 2. Log Dönüşümü 
 plt.subplot(1, 2, 2)
 sns.histplot(np.log1p(df['SalePrice']), kde=True, color='green')
 plt.title('Logaritmik Satış Fiyatı Dağılımı')
