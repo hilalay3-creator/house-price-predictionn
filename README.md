@@ -52,6 +52,7 @@ Model Name,         R² (%),     MAE ($),            RMSE ($)
 Ridge (Tuned) 🏆    92.70,    "13,926.36",      "19,567.50"
 XGBoost (Best),      91.99,   "14,456.14",      "20,498.07"
 Linear Regression,   91.60,    "14,513.31",     "20,994.44"
+Lasso (Tuned)	        89.93	    "16,569.92",	   "22,986.88"
 
 🧠 Design Choices & FAQ (Teknik Kararlar)
 
