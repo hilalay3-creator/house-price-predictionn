@@ -13,7 +13,6 @@ Terminalinizi açın ve proje ana dizinine gidin.
 
 Gerekli tüm kütüphaneleri (XGBoost, Scikit-learn, Joblib vb.)  kurmak için şu komutu çalıştırın:
 
-
 pip install -r requirements.txt
 
 Projenin ana dosyası main.py'dir. 
