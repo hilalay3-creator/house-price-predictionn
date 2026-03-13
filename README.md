@@ -1,47 +1,66 @@
-🏠 House Price Prediction - Bitirme Projesi (Hilal Ay)
-📖 Proje Özeti
-Bu çalışma, Ames Housing veri seti üzerinde ev fiyatlarını tahmin etmek için geliştirilmiş uçtan uca bir makine öğrenmesi projesidir. Proje kapsamında ham veriler üzerinde derinlemesine analizler (EDA) yapılmış, veriler temizlenmiş ve Lasso/Ridge regresyon modelleri ile fiyat tahmini gerçekleştirilmiştir.
+🏠 House Price Prediction - Advanced ML Pipeline (Hilal Ay)
 
 🔗 Veri Seti Linki (Kaggle)
 Kullanılan veri setine ve detaylarına Kaggle üzerinden erişebilirsiniz:
 House Prices: Advanced Regression Techniques 
+
 https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data
 
+🚀Kurulum ve Ortam Hazırlığı
+Projenin taşınabilirliği ve sürümler arası uyumluluğu için version pinning (sürüm sabitleme) uygulanmıştır.
 
-🛠️ Kurulum
-Projenin çalışması için VS Code veya herhangi bir Python editöründe aşağıdaki kütüphanelerin yüklü olması gerekmektedir:
+Terminalinizi açın ve proje ana dizinine gidin.
 
-Terminalinizi açın.
-Şu komutu yazarak gerekli tüm kütüphaneleri (Pandas, Scikit-learn vb.) tek seferde kurun:
-Bash
+Gerekli tüm kütüphaneleri (XGBoost, Scikit-learn, Joblib vb.)  kurmak için şu komutu çalıştırın:
+
+
 pip install -r requirements.txt
 
-🚀 Nasıl Çalıştırılır?
-Proje dosya yapısı birbirine bağımlı şekilde kurgulanmıştır:
+Projenin ana dosyası main.py'dir. 
 
-İndirdiğiniz train.csv dosyasını data/ klasörünün içine koyun.
+🛠️ Teknik Mimari ve Mühendislik Kararları
+Proje şu 5 kritik sütun üzerine inşa edilmiştir:
 
-notebooks/01_modeling.py dosyasını VS Code ile açın.
+1. Modüler Klasör Yapısı
 
-Dosya, veriyi otomatik olarak ../data/train.csv yolundan okuyacak şekilde ayarlanmıştır.
+Proje, monolitik yapıdan kurtarılarak endüstri standardı olan modüler yapıya geçirilmiştir
+:src/preprocessing.py: ColumnTransformer ile otomatik veri temizleme ve dönüşüm.
+src/model.py: Model mimarisi, GridSearchCV optimizasyonu ve log-transform mantığı.
+src/evaluation.py: Performans analizleri, RMSE/MAE hesaplamaları ve görsel çıktı yönetimi.
+src/main.py: Tüm pipeline'ı tek komutla çalıştıran orkestra şefi.
+src/predict.py: Bağımsız tahmin (inference) aracı.
 
-Dosyayı çalıştırdığınızda analiz raporlarını ve modellerin başarı skorlarını terminalde görebilirsiniz.
+2. Pipeline Mimarisi & ColumnTransformer
 
-📊 Sonuç Metrikleri (Şampiyon Model: Lasso)
-R² Skoru: %90.54 (Doğruluk oranı)
+Veri sızıntısını (Data Leakage) önlemek için tüm adımlar bir Scikit-learn Pipeline içine alınmıştır.Sayısal Veriler: SimpleImputer(strategy='median') + StandardScaler()Kategorik Veriler: SimpleImputer(strategy='constant') + OneHotEncoder(handle_unknown='ignore')Bu yapı sayesinde, eğitim setindeki istatistiklerin test setine sızması engellenmiş ve yeni gelen veriler için tam güvenlik sağlanmıştır.
 
-MAE (Ortalama Mutlak Hata): 16.045,91 $
+3. Log-Target Modeling (Target Engineering)
 
-RMSE (Kök Ortalama Kare Hata): 22.277,02 $
+Ev fiyatlarının sağa çarpık (right-skewed) dağılımını normalize etmek amacıyla hedef değişkene (SalePrice) Log1p dönüşümü uygulanmış; eğitim bu ölçekte yapılmıştır. Tahmin aşamasında sonuçlar Expm1 ile orijinal dolar birimine geri döndürülmüştür.
 
-💡 Kısa Yorum ve Çıkarımlar
-Proje sırasında model başarısını artıran kritik mühendislik kararları şunlardır:
+4. Hiperparametre Optimizasyonu & Cross-Validation
 
-Aykırı Değerler: Görsel analizler sonucu 4000 m² üstü yaşam alanı olan evlerin modelde sapmalara yol açtığı saptanmış ve bu veriler temizlenerek modelin genelleme yeteneği artırılmıştır.
+Modelin genelleme yeteneğini ispatlamak için tek split yerine 5-Fold Cross-Validation kullanılmıştır. Ridge ve XGBoost gibi modellerin en iyi parametreleri (alpha, learning_rate vb.) GridSearchCV ile bilimsel olarak belirlenmiştir.
 
-İkiz Sütunlar: Korelasyon matrisi ile birbirinin %90 ve üzeri kopyası olan "ikiz sütunlar" saptanmış ve sistemden elenmiştir. Bu işlem modelin gürültüden arınmasını sağlamış ve başarıyı doğrudan etkilemiştir.
+5. Model Persistence (Kalıcılık)
 
-Mühürleme: Kategorik boşluklar "None" ile mühürlenmiş, garaj ve yapı yılı gibi sayısal verilerde mantıksal ispatlar (Proof) yapılarak veri seti tutarlı hale getirilmiştir.
+Eğitilen şampiyon model, joblib kütüphanesi ile paketlenerek final_model.joblib olarak kaydedilmiştir.
 
-Hazırlayan: Hilal Ay (MSc Candidate in Electrical Engineering)
+📊 Güncel Performans Metrikleri
+
+Yeni mimaride elde edilen dürüst doğrulama sonuçları:
+Model Name,         R² (%),     MAE ($),            RMSE ($)
+Ridge (Tuned) 🏆    92.70,    "13,926.36",      "19,567.50"
+XGBoost (Best),      91.99,   "14,456.14",      "20,498.07"
+Linear Regression,   91.60,    "14,513.31",     "20,994.44"
+
+🧠 Design Choices & FAQ (Teknik Kararlar)
+
+1. Neden Şampiyon Ridge (Tuned) Oldu?
+
+XGBoost gibi kompleks modeller genellikle öne çıksa da, Ames Housing gibi veri setlerinde verinin doğrusal (linear) doğası ve başarılı Target Engineering (log-transform) sayesinde Ridge Regresyon, aşırı öğrenmeyi (overfitting) daha iyi domine ederek hem R² hem de RMSE metriklerinde en dengeli sonucu vermiştir.
+
+2. Neden Log-Target Transformation Uygulandı?
+
+Problem: Yüksek fiyatlı uç değerler (outliers), hataların karesini alan RMSE metriklerini domine ederek modeli yanıltıyordu.Çözüm: Log dönüşümü, fiyat dağılımını "Normal Dağılım"a yaklaştırarak modelin daha stabil katsayılar öğrenmesini sağlamış, varyansı stabilize etmiştir.
 

@@ -1,5 +1,17 @@
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
+# Veri İşleme ve Matematik
+pandas>=2.0.0
+numpy>=1.23.5
+
+# Makine Öğrenmesi (Pipeline ve Modeller)
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+
+# Kayıt ve Model Saklama
+joblib>=1.3.0
+
+# Görselleştirme (Evaluation Dashboard)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Yardımcı Araçlar
+scipy>=1.10.0

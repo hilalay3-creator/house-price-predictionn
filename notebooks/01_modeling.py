@@ -6,6 +6,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+# =============================================================================
+# ⚠️ ARAŞTIRMA VE DENEME NOT DEFTERİ (RESEARCH NOTEBOOK)
+# =============================================================================
+# Bu dosya, projenin ilk aşamasındaki Keşifsel Veri Analizi (EDA) ve 
+# ilk deneme modelleri için kullanılan bir "laboratuvar" çalışmasıdır.
+# 
+# 🚀 GÜNCEL VE PROFESYONEL ÜRETİM KODLARI "src/" KLASÖRÜNDEDİR.
+# Ana iş akışı, Pipeline mimarisi ve XGBoost modeli için lütfen:
+# 1. src/main.py (Eğitim)
+# 2. src/predict.py (Tahmin) dosyalarını inceleyiniz.
 # =================================================================
 # 1. VERİ YÜKLEME VE İLK BAKIŞ
 # =================================================================
